@@ -8,6 +8,8 @@ from test import Ui_MainWindow
 
 
 class MainTemplete(QtWidgets.QMainWindow, Ui_MainWindow):
+    secret = 0
+
     def __init__(self, parent=None):
         super(MainTemplete, self).__init__(parent)
         self.setupUi(self)
@@ -19,27 +21,43 @@ class MainTemplete(QtWidgets.QMainWindow, Ui_MainWindow):
     # ##
     def bind_view_event(self):
         print("========bind_view_event============")
+        # 查看设备信息
         self.btn_devices.clicked.connect(self.btn_devices_info)
-        self.btn_root.clicked.connect(self.btn_root_click)
+        # 一键root
+        self.btn_onekey_root.clicked.connect(self.btn_onekey_root_click)
+        # 重新挂载文件系统
+        self.btn_remount_file.clicked.connect(self.btn_remount_file_click)
+        # 一键重启
         self.btn_reboot.clicked.connect(self.btn_reboot_click)
+        # 导出日志
         self.btn_export_log.clicked.connect(self.btn_export_click)
+        # 查看系统属性
         self.btn_sys_prop.clicked.connect(self.btn_sys_prop_click)
+        # 监测属性变化
+        self.btn_check_prop.clicked.connect(self.btn_check_prop_click)
+        # 一键清屏
+        self.btn_clear_info.clicked.connect(self.btn_clear_info_click)
+        # push
+        self.btn_push.clicked.connect(self.btn_push_click)
+        # 加密ADB
+        self.btn_secret_adb.clicked.connect(self.btn_secret_adb_click)
+        # 非加密ADB
+        self.btn_normal_adb.clicked.connect(self.btn_normal_adb_click)
 
-    # 一键root
-    def btn_root_click(self):
-        print("========btn_devices_info============")
-        self.show_log("adb root && adb remount")
+    def btn_onekey_root_click(self):
+        print("========btn_onekey_root_click============")
+        self.show_log("adb root")
 
-    # 一键重启
+    def btn_remount_file_click(self):
+        self.show_log("adb remount")
+
     def btn_reboot_click(self):
         self.show_log("adb reboot")
 
-    # 查看设备信息
     def btn_devices_info(self):
         print("========btn_devices_info============")
         self.show_log("adb devices")
 
-    # 导出日志
     def btn_export_click(self):
         try:
             os.rmdir("c:/export_log")
@@ -49,14 +67,38 @@ class MainTemplete(QtWidgets.QMainWindow, Ui_MainWindow):
         print(self.le_log_export.text())
         self.show_log("adb pull data/local/log " + self.le_log_export.text())
 
-    # 显示操作记录
-    def show_log(self, cmd):
-        self.te_show.append("------------------" + str(datetime.now()) + "-------------------------")
-        self.te_show.append(os.popen(cmd).read())
-
-    # 显示系统属性
     def btn_sys_prop_click(self):
         self.show_log("adb shell getprop")
+
+    def btn_check_prop_click(self):
+        self.show_log("adb shell watchprops")
+
+    def btn_clear_info_click(self):
+        self.te_show.clear()
+
+    def btn_push_click(self):
+        print("adb push" + " " + self.le_file_path.text() + " " + self.le_total_path.text())
+        self.show_log("adb push" + " " + self.le_file_path.text() + " " + self.le_total_path.text())
+
+    def btn_secret_adb_click(self):
+        self.secret = 1
+        self.te_show.append("------------------" + str(datetime.now()) + "-------------------------")
+        self.te_show.append("已切换为加密ADB...")
+
+    def btn_normal_adb_click(self):
+        self.secret = 0
+        self.te_show.append("------------------" + str(datetime.now()) + "-------------------------")
+        self.te_show.append("已切换为正常ADB...")
+
+    def show_log(self, cmd):
+        if self.secret == 0:
+            print("非加密")
+            self.te_show.append("------------------" + str(datetime.now()) + "-------------------------")
+            self.te_show.append(os.popen(cmd).read())
+        else:
+            print("加密")
+            self.te_show.append("------------------" + str(datetime.now()) + "-------------------------")
+            self.te_show.append(os.popen("s" + cmd).read())
 
 
 if __name__ == '__main__':
