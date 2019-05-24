@@ -43,6 +43,8 @@ class MainTemplete(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btn_secret_adb.clicked.connect(self.btn_secret_adb_click)
         # 非加密ADB
         self.btn_normal_adb.clicked.connect(self.btn_normal_adb_click)
+        # 处理拖入文件路径
+        self.te_file_path.textChanged.connect(self.te_file_path_change)
 
     def btn_onekey_root_click(self):
         print("========btn_onekey_root_click============")
@@ -77,8 +79,11 @@ class MainTemplete(QtWidgets.QMainWindow, Ui_MainWindow):
         self.te_show.clear()
 
     def btn_push_click(self):
-        print("adb push" + " " + self.le_file_path.text() + " " + self.le_total_path.text())
-        self.show_log("adb push" + " " + self.le_file_path.text() + " " + self.le_total_path.text())
+        print("adb push" + " " + self.te_file_path.toPlainText() + " " + self.cb_total_path.currentText())
+        self.show_log(
+            "adb push" + " " + self.te_file_path.toPlainText() + " "
+            + self.cb_total_path.currentText() + " " + "&&" + " "
+            + "adb reboot")
 
     def btn_secret_adb_click(self):
         self.secret = 1
@@ -98,7 +103,11 @@ class MainTemplete(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             print("加密")
             self.te_show.append("------------------" + str(datetime.now()) + "-------------------------")
-            self.te_show.append(os.popen("s" + cmd).read())
+            self.te_show.append(os.popen(cmd.replace("adb", "sadb")).read())
+
+    def te_file_path_change(self):
+        if 0 == self.te_file_path.toPlainText().find('file:///'):
+            self.te_file_path.setText(self.te_file_path.toPlainText().replace('file:///', ''))
 
 
 if __name__ == '__main__':
